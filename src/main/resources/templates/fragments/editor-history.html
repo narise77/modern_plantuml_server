@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="editor-history">
+<div id="editor-history" class="editor-history" title="入力テキスト履歴 (最大20世代)">
+  <label for="history-select" class="history-label">履歴:</label>
+  <select id="history-select" name="history-select" class="select select-bordered select-xs" title="入力テキスト履歴 (最大20世代)">
+    <option value="" disabled selected>履歴から自動完成...</option>
+  </select>
+</div>
+</th:block>
+</body>
+</html>

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="editor">
+<div id="editor-main-container" class="editor flex-main flex-rows card bg-base-100 border border-base-300 shadow-sm">
+  <div>
+    <th:block th:replace="~{fragments/editor-url-input :: editor-url-input}"></th:block>
+  </div>
+  <div class="flex-main monaco-editor-container">
+    <textarea id="initCode" name="initCode" style="display: none;" th:text="${decoded}"></textarea>
+    <div id="monaco-editor"></div>
+  </div>
+</div>
+</th:block>
+</body>
+</html>

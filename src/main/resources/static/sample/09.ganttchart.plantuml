@@ -1,0 +1,68 @@
+@startgantt
+title ガントチャート
+
+language ja
+saturday are closed
+sunday are closed
+'プロジェクト開始日
+Project starts the 2020/05/01
+
+'重要なイベント
+2020-05-01 to 2020-05-01 is colored in azure and is named [開始]
+2020-06-11 to 2020-06-11 is colored in azure and is named [モジュール引き渡し]
+2020-07-07 to 2020-07-07 is colored in azure and is named [リリース]
+
+'現時点日付
+2020/05/25 is colored in salmon
+'祝日指定
+2020/5/20 is closed
+2020/6/16 to 2020/6/18 is closed
+
+-- 要件分析 --
+[要件分析(計画)] starts 2020-05-02 and lasts 3 days
+[要件分析(実績)] starts 2020-05-02 and lasts 3 days and is colored in Fuchsia/FireBrick
+
+-- 設計 --
+[設計(計画)] lasts 5 days
+[設計(実績)] lasts 4 days and is colored in Fuchsia/FireBrick
+[設計(実績)] starts at [要件分析(実績)]'s end
+[設計(計画)] starts at [要件分析(計画)]'s end
+
+-- 実装 --
+[実装(計画)] lasts 7 days
+[実装(実績)] lasts 7 days and is colored in Fuchsia/FireBrick
+[実装(実績)] starts at [設計(実績)]'s end
+[実装(計画)] starts at [設計(計画)]'s end
+
+-- 単体テスト --
+[単体テスト準備(計画)] lasts 3 days
+[単体テスト準備(実績)] lasts 3 days
+[単体テスト準備(計画)] starts at [実装(計画)]'s end
+[単体テスト準備(実績)] starts at [実装(実績)]'s end
+
+[単体テスト実施(計画)] lasts 5 days
+[単体テスト実施(実績)] lasts 5 days
+[単体テスト実施(計画)] starts at [単体テスト準備(計画)]'s end
+[単体テスト実施(実績)] starts at [単体テスト準備(実績)]'s end
+
+-- 結合テスト --
+[結合テスト準備(計画)] lasts 10 days
+[結合テスト準備(実績)] lasts 10 days
+[結合テスト準備(計画)] starts at [単体テスト実施(計画)]'s end
+[結合テスト準備(実績)] starts at [単体テスト実施(実績)]'s end
+
+[結合テスト実施(計画)] lasts 10 days
+[結合テスト実施(実績)] lasts 10 days
+[結合テスト実施(計画)] starts at [結合テスト準備(計画)]'s end
+[結合テスト実施(実績)] starts at [結合テスト準備(実績)]'s end
+
+hide footbox
+'週単位表示
+'printscale weekly
+<style>
+ganttDiagram {
+	closed {
+		FontColor red
+	}
+</style>
+@endgantt

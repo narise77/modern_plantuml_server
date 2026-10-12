@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <th:block th:replace="~{fragments/app-head :: app-head}"></th:block>
+  <title>PlantUML Server</title>
+  <style>
+    .content.viewer-content {
+      height: 100%;
+      margin: 5%;
+    }
+  </style>
+</head>
+<body>
+  <div class="content viewer-content">
+    <!-- Preview -->
+    <th:block th:replace="~{fragments/preview :: preview}"></th:block>
+  </div>
+</body>
+</html>

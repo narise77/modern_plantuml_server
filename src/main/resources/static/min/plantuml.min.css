@@ -1,0 +1,580 @@
+/**********************************
+* PlantUML Server Application CSS *
+***********************************/
+
+/************* variables *************/
+:root {
+  color-scheme: light dark;
+  --font-color: black;
+  --font-color-disabled: #888;
+  --bg-color: white;
+  --border-color: #ccc;
+  --border-color-2: #aaa;
+  --footer-font-color: #666;
+  --footer-bg-color: #eee;
+  --modal-bg-color: #fefefe;
+  --file-drop-color: #eee;
+}
+[data-theme="dark"] {
+  --font-color: #ccc;
+  --font-color-disabled: #777;
+  --bg-color: #212121;
+  --border-color: #848484;
+  --border-color-2: #aaa;
+  --footer-font-color: #ccc;
+  --footer-bg-color: black;
+  --modal-bg-color: #424242;
+  --file-drop-color: #212121;
+}
+
+/************* default settings *************/
+html, body {
+  margin: 0;
+  padding: 0;
+}
+html {
+  font-family: arial,helvetica,sans-serif;
+}
+body {
+  /* prefer daisyUI theme colors, fall back to the app variables */
+  background-color: var(--color-base-200, var(--bg-color));
+  color: var(--color-base-content, var(--font-color));
+  height: 100vh;
+  overflow: hidden;
+}
+.app {
+  height: 100%;
+}
+input:not([type="image"]) {
+  background-color: var(--bg-color);
+  color: var(--font-color);
+}
+input[type="file"]::file-selector-button {
+  background-color: var(--bg-color);
+  color: var(--font-color);
+}
+select {
+  background-color: var(--bg-color);
+  color: var(--font-color);
+}
+
+/************* ruler *************/
+.hr {
+  padding: 1rem 0;
+  width: 100%;
+}
+.flex-columns > .hr {
+  padding: 0 1rem;
+  width: initial;
+  height: 100%;
+}
+.hr:after {
+  content: "";
+  display: block;
+  background-color: var(--border-color);
+  height: 100%;
+  width: 100%;
+  min-height: 3px;
+  min-width: 3px;
+}
+
+/************* wait cursor *************/
+.wait {
+  cursor: wait;
+}
+.wait > * {
+  pointer-events: none;
+}
+
+/************* flex rows and columns *************/
+.flex-columns {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+.flex-rows {
+  display: flex;
+  flex-direction: column;
+}
+.flex-main {
+  flex: 1 1 1px;
+  overflow: hidden;
+  min-height: 0;
+}
+.flex-columns > *, .flex-rows > * {
+  flex-shrink: 0;
+}
+
+/*******************************************************************/
+/************* header, main, footer *************/
+.header {
+  width: 100%;
+}
+.main {
+  margin: 1% 5%;
+  z-index: 1;
+}
+.main > div {
+  margin: 0 1.75%;
+}
+.main > div:first-child {
+  margin-left: 0;
+}
+.main > div:last-child {
+  margin-right: 0;
+}
+/* vertical layout: header / editor / previewer / footer */
+.app > #editor-main-container,
+.app > #previewer-main-container {
+  margin: 0.5rem 5%;
+  min-height: 15rem;
+  z-index: 1;
+}
+/* keep the diagram in normal flow so the previewer has a real height */
+.app > #previewer-main-container .diagram > div {
+  position: static;
+  transform: none;
+  height: 100%;
+  max-height: none;
+  max-width: none;
+  margin: 0;
+  text-align: center;
+}
+/* no scrolling outside the editor: shrink the diagram to fit */
+.app > #previewer-main-container .diagram img,
+.app > #previewer-main-container .diagram svg,
+.app > #previewer-main-container .diagram pre {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  overflow: hidden;
+}
+@media screen and (max-width: 900px) {
+  .main {
+    display: block;
+    overflow: inherit;
+  }
+  .main > div {
+    margin: 1.75% 0;
+  }
+  .main > div:first-child {
+    margin-top: 0;
+  }
+  .main > div:last-child {
+    margin-bottom: 0;
+  }
+}
+.diagram-options {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-left: 1rem;
+}
+.diagram-options .font-select label, .diagram-options .dpi-select label {
+  margin-right: 0.5rem;
+}
+.footer p {
+  background-color: var(--footer-bg-color);
+  color: var(--footer-font-color);
+  font-size: 0.7em;
+  margin: 0;
+  padding: 0.5em;
+  text-align: center;
+}
+
+/*******************************************************************/
+/************* color themes *************/
+[data-theme="dark"] img:not(#diagram-png):not(.no-filter) {
+  filter: invert() contrast(30%);
+}
+[data-theme="dark"] input[type="image"] {
+  filter: invert() contrast(30%);
+}
+[data-theme="dark"] a {
+  color: white;
+}
+
+/*************
+* Editor CSS *
+**************/
+
+.editor {
+  box-sizing: border-box;
+  overflow: hidden;
+}
+@media screen and (max-width: 900px) {
+  .editor {
+    height: 20em;
+  }
+}
+.editor .monaco-editor-container {
+  overflow: hidden;
+  position: relative;
+}
+
+#monaco-editor {
+  height: 100%;
+}
+/* Hack to display the icons and emojis in the auto completion documentation in a visible size.
+ * (see PlantUmlLanguageFeatures.register{Icon,Emoji}Completion) */
+#monaco-editor .overlayWidgets .suggest-details p img[alt="icon"],
+#monaco-editor .overlayWidgets .suggest-details p img[alt="emoji"] {
+  height: 1.2rem;
+}
+
+/*********************
+* Editor History CSS *
+**********************/
+
+.editor .btn-input .editor-history {
+  align-items: center;
+  border-left: 1px solid var(--border-color);
+  display: flex;
+  gap: 0.35rem;
+  margin-left: 0.5rem;
+  padding: 0 0.5rem;
+  flex-shrink: 0;
+}
+
+.editor .btn-input .editor-history .history-label {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.editor .btn-input .editor-history select#history-select {
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 0.25rem;
+  color: var(--font-color);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.75rem;
+  height: 1.6rem;
+  max-width: 14rem;
+  min-width: 9rem;
+  outline: none;
+  padding: 0 0.4rem;
+  text-overflow: ellipsis;
+}
+
+.editor .btn-input .editor-history select#history-select:focus {
+  border-color: var(--border-color-2);
+}
+
+/*********************
+* Editor Sample CSS  *
+*********************/
+
+.editor .btn-input .editor-sample {
+  align-items: center;
+  border-left: 1px solid var(--border-color);
+  display: flex;
+  gap: 0.35rem;
+  margin-left: 0.5rem;
+  padding: 0 0.5rem;
+  flex-shrink: 0;
+}
+
+.editor .btn-input .editor-sample .sample-label {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.editor .btn-input .editor-sample select#sample-select {
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 0.25rem;
+  color: var(--font-color);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.75rem;
+  height: 1.6rem;
+  max-width: 14rem;
+  min-width: 9rem;
+  outline: none;
+  padding: 0 0.4rem;
+  text-overflow: ellipsis;
+}
+
+.editor .btn-input .editor-sample select#sample-select:focus {
+  border-color: var(--border-color-2);
+}
+
+/***********************
+* Editor URL Input CSS *
+************************/
+
+.editor .btn-input {
+  align-items: center;
+  border-bottom: 3px solid var(--border-color);
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+}
+.editor .btn-input input[type=text] {
+  border: 0;
+  flex: 1 1 1px;
+  font-family: monospace;
+  font-size: medium;
+  padding: 0.2em;
+  text-overflow: ellipsis;
+}
+.editor .btn-input input[type=text]:focus {
+  border: 0;
+  box-shadow: none;
+  outline: none;
+}
+.editor .btn-input #url-copy-btn {
+  margin-left: 0.7em;
+  padding: 0 0.3em;
+}
+
+/*********************
+* Diagram Export CSS *
+**********************/
+
+#diagram-export.modal .label-input-pair label {
+  min-width: 8rem;
+}
+
+/*********************
+* Diagram Import CSS *
+**********************/
+
+#diagram-import p.error-message {
+  color: darkred;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+#diagram-import input[type="file"] {
+  display: block;
+  width: 100%;
+  border: 0.2rem dashed var(--border-color);
+  border-radius: 0.4rem;
+  box-sizing: border-box;
+  padding: 5rem 2rem;
+}
+#diagram-import input[type="file"],
+#diagram-import input[type="file"]::file-selector-button {
+  background-color: var(--modal-bg-color);
+}
+#diagram-import input[type="file"]:hover,
+#diagram-import input[type="file"].drop-able {
+  border-color: var(--border-color-2);
+  background-color: var(--file-drop-color);
+}
+#diagram-import input[type="file"]:hover::file-selector-button,
+#diagram-import input[type="file"].drop-able::file-selector-button {
+  background-color: var(--file-drop-color);
+}
+
+/*************
+* Modals CSS *
+**************/
+
+/* NOTE: `div.modal` beats daisyUI's `.modal` (hidden until `.modal-open`);
+   visibility is controlled by the inline `display` style via `setVisibility` */
+div.modal {
+  display: block;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  color: inherit;
+  position: fixed;
+  z-index: 1000;
+  padding: 5%;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  overflow: auto;
+  background-color: rgb(0, 0, 0);
+  background-color: rgba(0, 0, 0, 0.4);
+}
+div.modal .modal-content {
+  background-color: var(--color-base-100, var(--modal-bg-color));
+  margin: auto;
+  padding: 2rem;
+  border: 3px solid var(--border-color);
+  max-width: 30rem;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  -webkit-animation-name: modal-animatetop;
+  -webkit-animation-duration: 0.4s;
+  animation-name: modal-animatetop;
+  animation-duration: 0.4s;
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
+}
+@-webkit-keyframes modal-animatetop {
+  from { top: -50%; opacity: 0; }
+  to { top: 50%; opacity: 1; }
+}
+@keyframes modal-animatetop {
+  from { top: -50%; opacity: 0; }
+  to { top: 50%; opacity: 1; }
+}
+/************* header, main, footer *************/
+.modal .modal-header h2 {
+  margin: 0;
+}
+.modal .modal-main {
+  flex: 1;
+}
+.modal .modal-footer {
+  margin-top: 1rem;
+  text-align: right;
+}
+/************* inputs *************/
+.modal input, .modal select {
+  border: 1px solid var(--border-color);
+}
+.modal input:not(:focus):invalid {
+  border-bottom-color: red;
+}
+.modal input[type="file"]::file-selector-button {
+  border: 1px solid var(--border-color);
+}
+/************* ok + cancel buttons *************/
+.modal input.ok, .modal input.cancel {
+  min-width: 5rem;
+}
+.modal input.ok[disabled], .modal input.cancel[disabled] {
+  color: var(--font-color-disabled);
+}
+.modal input.ok:not([disabled]):hover {
+  border-bottom-color: green;
+}
+.modal input.cancel:not([disabled]):hover {
+  border-bottom-color: darkred;
+}
+/************* label + input pair *************/
+.modal .label-input-pair {
+  margin: 1rem 0;
+  overflow: hidden;
+}
+.modal .label-input-pair:first-child {
+  margin-top: 0;
+}
+.modal .label-input-pair:last-child {
+  margin-bottom: 0;
+}
+.modal .label-input-pair label {
+  display: inline-block;
+  min-width: 15rem;
+}
+.modal .label-input-pair label + input,
+.modal .label-input-pair label + select {
+  box-sizing: border-box;
+  display: inline-block;
+  min-width: 10rem;
+}
+
+/***************
+* Settings CSS *
+****************/
+
+/* daisyUI look: drop the legacy modal frame */
+div.modal#settings .modal-content {
+  border-width: 1px;
+  border-color: var(--color-base-300, var(--border-color));
+  padding: 1.5rem;
+  max-width: 34rem;
+}
+#settings input.input, #settings select.select {
+  border: 1px solid var(--color-base-300, var(--border-color));
+}
+#settings #settings-monaco-editor {
+  height: 17rem;
+}
+
+/**********************
+* Preview Diagram CSS *
+***********************/
+
+.diagram {
+  height: 100%;
+  overflow: hidden;
+  background-color: white;
+  color: black;
+  color-scheme: light;
+}
+.diagram > div {
+  margin: 1rem 0;
+  text-align: center;
+}
+.diagram img, .diagram svg, .diagram pre {
+  border: 3px solid var(--border-color);
+  box-sizing: border-box;
+  padding: 10px;
+}
+@media screen and (min-width: 900px) {
+  .diagram {
+    position: relative;
+  }
+  .diagram > div {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-height: 100%;
+    max-width: 100%;
+  }
+}
+
+/*******************
+* Preview Menu CSS *
+********************/
+
+.preview-menu {
+  margin-left: 5%;
+  margin-right: 5%;
+}
+.btn-settings {
+  margin-left: auto;
+  margin-right: 0.25rem;
+}
+.menu-r {
+  min-width: 3rem;
+}
+.menu-r .btn-float-r {
+  float: right;
+  margin-left: 0.25rem;
+  text-align: right;
+}
+.diagram-links {
+  align-items: center;
+  display: flex;
+}
+.diagram-link {
+  margin-left: 0.25rem;
+  margin-right: 0.25rem;
+}
+.diagram-links .diagram-link:first-of-type {
+  margin-left: 0.5rem;
+}
+.diagram-links .diagram-link:last-of-type {
+  margin-right: 0;
+}
+
+/****************
+* Paginator CSS *
+*****************/
+
+#paginator {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+/**************
+* Preview CSS *
+***************/
+
+.previewer-container {
+  height: 100%;
+}

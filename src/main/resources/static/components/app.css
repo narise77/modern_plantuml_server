@@ -1,0 +1,195 @@
+/**********************************
+* PlantUML Server Application CSS *
+***********************************/
+
+/************* variables *************/
+:root {
+  color-scheme: light dark;
+  --font-color: black;
+  --font-color-disabled: #888;
+  --bg-color: white;
+  --border-color: #ccc;
+  --border-color-2: #aaa;
+  --footer-font-color: #666;
+  --footer-bg-color: #eee;
+  --modal-bg-color: #fefefe;
+  --file-drop-color: #eee;
+}
+[data-theme="dark"] {
+  --font-color: #ccc;
+  --font-color-disabled: #777;
+  --bg-color: #212121;
+  --border-color: #848484;
+  --border-color-2: #aaa;
+  --footer-font-color: #ccc;
+  --footer-bg-color: black;
+  --modal-bg-color: #424242;
+  --file-drop-color: #212121;
+}
+
+/************* default settings *************/
+html, body {
+  margin: 0;
+  padding: 0;
+}
+html {
+  font-family: arial,helvetica,sans-serif;
+}
+body {
+  /* prefer daisyUI theme colors, fall back to the app variables */
+  background-color: var(--color-base-200, var(--bg-color));
+  color: var(--color-base-content, var(--font-color));
+  height: 100vh;
+  overflow: hidden;
+}
+.app {
+  height: 100%;
+}
+input:not([type="image"]) {
+  background-color: var(--bg-color);
+  color: var(--font-color);
+}
+input[type="file"]::file-selector-button {
+  background-color: var(--bg-color);
+  color: var(--font-color);
+}
+select {
+  background-color: var(--bg-color);
+  color: var(--font-color);
+}
+
+/************* ruler *************/
+.hr {
+  padding: 1rem 0;
+  width: 100%;
+}
+.flex-columns > .hr {
+  padding: 0 1rem;
+  width: initial;
+  height: 100%;
+}
+.hr:after {
+  content: "";
+  display: block;
+  background-color: var(--border-color);
+  height: 100%;
+  width: 100%;
+  min-height: 3px;
+  min-width: 3px;
+}
+
+/************* wait cursor *************/
+.wait {
+  cursor: wait;
+}
+.wait > * {
+  pointer-events: none;
+}
+
+/************* flex rows and columns *************/
+.flex-columns {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+.flex-rows {
+  display: flex;
+  flex-direction: column;
+}
+.flex-main {
+  flex: 1 1 1px;
+  overflow: hidden;
+  min-height: 0;
+}
+.flex-columns > *, .flex-rows > * {
+  flex-shrink: 0;
+}
+
+/*******************************************************************/
+/************* header, main, footer *************/
+.header {
+  width: 100%;
+}
+.main {
+  margin: 1% 5%;
+  z-index: 1;
+}
+.main > div {
+  margin: 0 1.75%;
+}
+.main > div:first-child {
+  margin-left: 0;
+}
+.main > div:last-child {
+  margin-right: 0;
+}
+/* vertical layout: header / editor / previewer / footer */
+.app > #editor-main-container,
+.app > #previewer-main-container {
+  margin: 0.5rem 5%;
+  min-height: 15rem;
+  z-index: 1;
+}
+/* keep the diagram in normal flow so the previewer has a real height */
+.app > #previewer-main-container .diagram > div {
+  position: static;
+  transform: none;
+  height: 100%;
+  max-height: none;
+  max-width: none;
+  margin: 0;
+  text-align: center;
+}
+/* no scrolling outside the editor: shrink the diagram to fit */
+.app > #previewer-main-container .diagram img,
+.app > #previewer-main-container .diagram svg,
+.app > #previewer-main-container .diagram pre {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  overflow: hidden;
+}
+@media screen and (max-width: 900px) {
+  .main {
+    display: block;
+    overflow: inherit;
+  }
+  .main > div {
+    margin: 1.75% 0;
+  }
+  .main > div:first-child {
+    margin-top: 0;
+  }
+  .main > div:last-child {
+    margin-bottom: 0;
+  }
+}
+.diagram-options {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-left: 1rem;
+}
+.diagram-options .font-select label, .diagram-options .dpi-select label {
+  margin-right: 0.5rem;
+}
+.footer p {
+  background-color: var(--footer-bg-color);
+  color: var(--footer-font-color);
+  font-size: 0.7em;
+  margin: 0;
+  padding: 0.5em;
+  text-align: center;
+}
+
+/*******************************************************************/
+/************* color themes *************/
+[data-theme="dark"] img:not(#diagram-png):not(.no-filter) {
+  filter: invert() contrast(30%);
+}
+[data-theme="dark"] input[type="image"] {
+  filter: invert() contrast(30%);
+}
+[data-theme="dark"] a {
+  color: white;
+}

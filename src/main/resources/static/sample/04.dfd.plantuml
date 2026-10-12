@@ -1,0 +1,30 @@
+@startuml
+title データフロー図
+
+skinparam actorStyle hollow
+left to right direction
+
+actor "ユーザー" as User
+
+rectangle "会員登録システム" {
+  component "[1. 入力受付]" as P1
+  component "[2. 仮登録処理]" as P2
+  component "[3. メール送信処理]" as P3
+  component "[4. 本登録処理]" as P4
+
+  database "仮登録DB" as DS1
+  database "会員DB" as DS2
+}
+
+' データフロー（正常系のみ）
+User --> P1 : 1. 会員情報（メール、パスワード等）
+P1 --> P2 : 2. 入力データ
+P2 --> DS1 : 3. 仮登録情報保存
+P2 --> P3 : 4. 認証メール送信用データ
+P3 --> User : 5. 認証メール送信
+User --> P4 : 6. 認証URLアクセス
+DS1 --> P4 : 7. 仮登録情報取得
+P4 --> DS2 : 8. 本登録情報保存
+P4 --> User : 9. 登録完了通知
+
+@enduml

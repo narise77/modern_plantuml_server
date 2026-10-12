@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <th:block th:replace="~{fragments/app-head :: app-head}"></th:block>
+  <title>Modern PlantUML Server</title>
+</head>
+<body>
+  <div class="app flex-rows">
+    <div class="header">
+      <th:block th:replace="~{fragments/header :: header}"></th:block>
+    </div>
+    <th:block th:replace="~{fragments/editor :: editor}"></th:block>
+    <div id="previewer-main-container" class="previewer flex-main card bg-base-100 border border-base-300 shadow-sm p-2">
+      <th:block th:replace="~{fragments/preview :: preview}"></th:block>
+    </div>
+    <!-- editor modals -->
+    <th:block th:replace="~{fragments/diagram-import :: diagram-import}"></th:block>
+    <th:block th:replace="~{fragments/diagram-export :: diagram-export}"></th:block>
+  </div>
+</body>
+</html>

@@ -1,0 +1,20 @@
+@startuml
+title ユーズケース図
+
+left to right direction
+actor 利用者 as User
+actor 管理者 as Admin
+
+rectangle 図書館管理システム {
+  User -- (本を検索する)
+  User -- (本を借りる)
+  User -- (本を返却する)
+
+  (システム管理) -- Admin
+  (蔵書管理) -- Admin
+
+  (本を借りる) .> (利用者認証) : <<include>>
+  (本を返却する) .> (利用者認証) : <<include>>
+  (システム管理) .> (管理者認証) : <<include>>
+}
+@enduml

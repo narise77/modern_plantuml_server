@@ -1,0 +1,26 @@
+@startuml
+title コンポネント図
+
+package "フロントエンド" {
+  [Webブラウザ] as WebBrowser
+  [UIコンポーネント] as UI
+}
+
+package "バックエンド" {
+  [APIサーバー] as API
+  [認証サービス] as Auth
+  [データ処理サービス] as DataProcessor
+}
+
+database "データベース" {
+  [ユーザーDB] as UserDB
+  [コンテンツDB] as ContentDB
+}
+
+WebBrowser --> UI : 表示
+UI --> API : リクエスト送信
+API --> Auth : 認証要求
+API --> DataProcessor : データ要求
+Auth --> UserDB : 認証情報確認
+DataProcessor --> ContentDB : データ取得
+@enduml

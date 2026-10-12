@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="font-select">
+<div class="font-select">
+  <label class="select select-sm">
+    <span class="label">Font</span>
+    <select id="font-select">
+    <option value="">(default)</option>
+      <option th:each="family : ${fontFamilies}" th:value="${family}" th:text="${family}"></option>
+    </select>
+  </label>
+</div>
+</th:block>
+</body>
+</html>

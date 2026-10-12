@@ -1,0 +1,34 @@
+/**********************
+* Preview Diagram CSS *
+***********************/
+
+.diagram {
+  height: 100%;
+  overflow: hidden;
+  background-color: white;
+  color: black;
+  color-scheme: light;
+}
+.diagram > div {
+  margin: 1rem 0;
+  text-align: center;
+}
+.diagram img, .diagram svg, .diagram pre {
+  border: 3px solid var(--border-color);
+  box-sizing: border-box;
+  padding: 10px;
+}
+@media screen and (min-width: 900px) {
+  .diagram {
+    position: relative;
+  }
+  .diagram > div {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-height: 100%;
+    max-width: 100%;
+  }
+}

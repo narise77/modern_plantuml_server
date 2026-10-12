@@ -1,0 +1,16 @@
+[Unit]
+Description=Modern Plantuml Service
+After=network.target
+
+[Service]
+WorkingDirectory=/var/modern_plantuml_server
+Environment="JAVA_HOME=/usr/lib/jvm/java-17-openjdk-17.0.16.0.8-2.el9.x86_64" "LANG=ja_JP.UTF-8" "PLANTUML_SERVER_PORT=6080" "PLANTUML_SERVER_CONTEXTPATH=/plantuml" "FONT_PATH=" "SAMPLE_PATH="
+User=root
+Type=simple
+PIDFile=/var/modern_plantuml_server/plantuml.pid
+ExecStart=java -Djava.awt.headless=true -Duser.timezone=Asia/Tokyo -jar /var/modern_plantuml_server/modern_plantuml_server.jar
+TimeoutStartSec=150
+
+[Install]
+WantedBy=multi-user.target
+

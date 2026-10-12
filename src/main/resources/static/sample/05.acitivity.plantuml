@@ -1,0 +1,22 @@
+@startuml
+title アクティビティ図
+
+start
+:ユーザーがログイン;
+if (認証成功?) then (yes)
+  :ダッシュボードを表示;
+  fork
+    :通知を確認;
+  fork again
+    :最新のデータを読み込む;
+  end fork
+  :タスクを選択;
+else (no)
+  :ログインエラーを表示;
+  :再試行を促す;
+  stop
+endif
+:タスクを実行;
+:ログアウト;
+stop
+@enduml

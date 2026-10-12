@@ -1,0 +1,25 @@
+@startsalt
+title ワイヤフレーム図
+
+{+
+  <b>ユーザー管理画面
+
+  {
+    ユーザーID | "ID001"
+    氏名 | "山田太郎"
+    メールアドレス | "yamada@example.com"
+    権限 | ^管理者^一般ユーザー^閲覧者^
+  }
+
+  {[保存] [キャンセル]}
+
+  {^"ユーザー一覧"
+    {#
+      # | ID | 氏名 | メールアドレス | 権限
+      1 | ID001 | 山田太郎 | yamada@example.com | 管理者
+      2 | ID002 | 鈴木花子 | suzuki@example.com | 一般ユーザー
+      3 | ID003 | 佐藤次郎 | sato@example.com | 閲覧者
+    }
+  }
+}
+@endsalt

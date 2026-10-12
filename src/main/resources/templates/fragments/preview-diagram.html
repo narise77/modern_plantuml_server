@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="preview-diagram">
+<div id="diagram" class="diagram">
+  <div>
+    <!-- PNG -->
+    <img id="diagram-png" th:src="|png/${diagramUrl}|" alt="PlantUML diagram" usemap="#plantuml_map" />
+    <th:block th:if="${hasMap}" th:utext="${map}"></th:block>
+    <th:block th:unless="${hasMap}"><map id="plantuml_map" name="plantuml_map"></map></th:block>
+    <!-- SVG -->
+    <svg id="diagram-svg" style="display: none;"></svg>
+    <!-- ASCII Art -->
+    <pre id="diagram-txt" style="display: none;"></pre>
+  </div>
+</div>
+</th:block>
+</body>
+</html>

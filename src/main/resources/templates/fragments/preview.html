@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="preview">
+<div class="previewer-container flex-rows">
+  <th:block th:replace="~{fragments/preview-menu :: preview-menu}"></th:block>
+  <div class="hr"></div>
+  <th:block th:replace="~{fragments/paginator :: paginator}"></th:block>
+  <div class="previewer-main flex-main">
+    <th:block th:replace="~{fragments/preview-diagram :: preview-diagram}"></th:block>
+  </div>
+  <div th:if="${showSocialButtons}">
+      <th:block th:replace="~{fragments/social-buttons :: social-buttons}"></th:block>
+    </div>
+  <!-- global modals -->
+  <th:block th:replace="~{fragments/settings :: settings}"></th:block>
+</div>
+</th:block>
+</body>
+</html>

@@ -1,0 +1,35 @@
+@startuml
+title エンティティ図
+
+entity "ユーザー" as users {
+  * ユーザーID : integer <<PK>>
+  --
+  * ユーザー名 : varchar
+  * Email : varchar
+  パスワードハッシュ : varchar
+  登録日時 : datetime
+}
+
+entity "投稿" as posts {
+  * 投稿ID : integer <<PK>>
+  --
+  * ユーザーID : integer <<FK>>
+  * タイトル : varchar
+  * 内容 : text
+  作成日時 : datetime
+  更新日時 : datetime
+}
+
+entity "コメント" as comments {
+  * コメントID : integer <<PK>>
+  --
+  * 投稿ID : integer <<FK>>
+  * ユーザーID : integer <<FK>>
+  * 内容 : text
+  作成日時 : datetime
+}
+
+users ||--o{ posts
+posts ||--o{ comments
+users ||--o{ comments
+@enduml

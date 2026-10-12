@@ -1,0 +1,149 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.3.5'
+    id 'io.spring.dependency-management' version '1.1.6'
+    id 'org.graalvm.buildtools.native' version '0.10.3'
+}
+
+group = 'org.sourceforge.plantuml'
+version = '0.1'
+description = 'PlantUML Servlet'
+
+// compile for Java `javaVersion` with the current JDK
+tasks.withType(JavaCompile).configureEach {
+    options.release = project.property('javaVersion') as int
+    options.encoding = 'UTF-8'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // embedded Tomcat + Spring MVC
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    // web UI templates (src/main/resources/templates)
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+
+    implementation "net.sourceforge.plantuml:plantuml:${plantumlVersion}"
+    // served by Spring Boot under /webjars/**
+    runtimeOnly "org.webjars.npm:monaco-editor:${monacoEditorVersion}"
+
+    // jlatexmath
+    runtimeOnly "org.scilab.forge:jlatexmath:${jlatexmathVersion}"
+    runtimeOnly "org.scilab.forge:jlatexmath-font-greek:${jlatexmathVersion}"
+    runtimeOnly "org.scilab.forge:jlatexmath-font-cyrillic:${jlatexmathVersion}"
+
+    // SVG rasterizer (GraalVM friendly, zero dependencies)
+    implementation "com.github.weisj:jsvg:${jsvgVersion}"
+
+    // ELK
+    implementation "org.eclipse.elk:org.eclipse.elk.core:${elkVersion}"
+    implementation "org.eclipse.elk:org.eclipse.elk.alg.layered:${elkVersion}"
+    implementation "org.eclipse.elk:org.eclipse.elk.alg.mrtree:${elkVersion}"
+
+    // Testing
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params'
+    testImplementation 'org.junit.platform:junit-platform-suite-api'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+    testRuntimeOnly 'org.junit.platform:junit-platform-suite-engine'
+    testImplementation "org.seleniumhq.selenium:selenium-java:${seleniumVersion}"
+    testImplementation "io.github.bonigarcia:webdrivermanager:${webdrivermanagerVersion}"
+}
+
+tasks.withType(Javadoc).configureEach {
+    options.encoding = 'UTF-8'
+    options.memberLevel = JavadocMemberLevel.PRIVATE
+    options.noHelp = true
+}
+
+configurations {
+    closureCompiler
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    onlyIf { !skipTests.toBoolean() }
+    // e.g. gradlew test -PskipTests=false -Psystem.test.server=http://localhost:8080/plantuml
+    if (project.hasProperty('system.test.server')) {
+        systemProperty 'system.test.server', project.property('system.test.server')
+    }
+}
+
+// Bundle and minify the web resources into src/main/resources/static/min
+dependencies {
+    closureCompiler "com.google.javascript:closure-compiler:${closureCompilerVersion}"
+}
+def webappDir = layout.projectDirectory.dir('src/main/resources/static')
+def minDir = webappDir.dir('min')
+
+def registerJsBundle(String taskName, Closure<List<File>> inputFiles, String output) {
+    def minDir = layout.projectDirectory.dir('src/main/resources/static/min')
+    return tasks.register(taskName, JavaExec) {
+        group = 'build'
+        description = "Bundle JS into min/${output}"
+        classpath = configurations.closureCompiler
+        mainClass = 'com.google.javascript.jscomp.CommandLineRunner'
+        def files = inputFiles()
+        inputs.files(files)
+        outputs.file(minDir.file(output))
+        args '--compilation_level', minifyWebResources.toBoolean() ? 'SIMPLE' : 'WHITESPACE_ONLY',
+            '--language_in', 'ECMASCRIPT_2020',
+            '--language_out', 'ECMASCRIPT5_STRICT',
+            '--emit_use_strict',
+            '--warning_level', 'DEFAULT',
+            '--charset', 'UTF-8',
+            '--js_output_file', minDir.file(output).asFile.path
+        files.each { args '--js', it.path }
+        doFirst { minDir.asFile.mkdirs() }
+    }
+}
+
+// all JS files of the web server except the PlantUML JS language features
+def bundleAppJs = registerJsBundle('bundleAppJs', {
+    fileTree(webappDir) {
+        include 'components/**/*.js', 'js/**/*.js'
+        exclude 'js/language/**'
+    }.files.sort { it.path }
+}, 'plantuml.min.js')
+
+// PlantUML JS language features (language.js and validation.js first)
+def bundleLanguageJs = registerJsBundle('bundleLanguageJs', {
+    def dir = webappDir.dir('js/language').asFile
+    def first = [new File(dir, 'language.js'), new File(dir, 'validation/validation.js')]
+    first + fileTree(dir) { include '**/*.js' }.files.sort { it.path }.findAll { !(it in first) }
+}, 'plantuml-language.min.js')
+
+// all web server style files
+def bundleCss = tasks.register('bundleCss') {
+    group = 'build'
+    description = 'Bundle CSS into min/plantuml.min.css'
+    def files = fileTree(webappDir.dir('components')) { include '**/*.css' }
+    def output = minDir.file('plantuml.min.css')
+    inputs.files(files)
+    outputs.file(output)
+    doLast {
+        output.asFile.parentFile.mkdirs()
+        output.asFile.setText(files.files.sort { it.path }.collect { it.getText('UTF-8') }.join('\n'), 'UTF-8')
+    }
+}
+
+tasks.register('bundleWebResources') {
+    group = 'build'
+    description = 'Bundle and minify all web resources (JS, CSS) into src/main/resources/static/min'
+    dependsOn bundleAppJs, bundleLanguageJs, bundleCss
+}
+
+// the bundled web resources are part of the classpath (static/min)
+tasks.named('processResources') {
+    dependsOn 'bundleWebResources'
+}
+
+tasks.named('bootJar') {
+    archiveFileName = 'modern_plantuml_server.jar'
+    // PlantUML lists its themes etc. via file paths, which fails inside the nested jar
+    requiresUnpack '**/plantuml-*.jar'
+}
+
