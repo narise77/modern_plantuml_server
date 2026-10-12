@@ -1,6 +1,6 @@
 # Modern PlantUML Server
 **テキストを入力するだけ。ブラウザ上ですぐに美しい図が描ける作図ツール**
-元「PlantUML Server」の改善版
+ - 元「PlantUML Server」の改善版
 
 ## スクリーンショット
 
