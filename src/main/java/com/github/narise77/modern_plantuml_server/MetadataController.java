@@ -86,6 +86,8 @@ public class MetadataController {
         final HttpURLConnection conn = ProxyController.getConnection(url);
         try (InputStream is = conn.getInputStream()) {
             return handleRequest(is, format, conn.getContentType(), null, accept);
+        } finally {
+            conn.disconnect();
         }
     }
 

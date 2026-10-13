@@ -69,6 +69,8 @@ public class McpController {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(response);
     }
 
+    private static final long SSE_TIMEOUT = 30 * 60 * 1000L; // 30 minutes
+
     /**
      * MCP Server-Sent Events (SSE) stream endpoint.
      * Sends endpoint event with the URL to post messages to.
@@ -78,13 +80,19 @@ public class McpController {
      */
     @GetMapping(value = "/mcp/sse", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter connectSse(HttpServletRequest request) {
-        final SseEmitter emitter = new SseEmitter(0L); // Infinite timeout
+        final SseEmitter emitter = new SseEmitter(SSE_TIMEOUT);
         final String sessionId = UUID.randomUUID().toString();
         sseSessions.put(sessionId, emitter);
 
         emitter.onCompletion(() -> sseSessions.remove(sessionId));
-        emitter.onTimeout(() -> sseSessions.remove(sessionId));
-        emitter.onError(e -> sseSessions.remove(sessionId));
+        emitter.onTimeout(() -> {
+            sseSessions.remove(sessionId);
+            emitter.complete();
+        });
+        emitter.onError(e -> {
+            sseSessions.remove(sessionId);
+            emitter.completeWithError(e);
+        });
 
         try {
             final String contextPath = request.getContextPath();
@@ -119,6 +127,10 @@ public class McpController {
                     emitter.send(SseEmitter.event().name("message").data(response));
                 } catch (IOException e) {
                     sseSessions.remove(sessionId);
+                    try {
+                        emitter.completeWithError(e);
+                    } catch (Exception ignored) {
+                    }
                 }
             }
             return ResponseEntity.status(HttpStatus.ACCEPTED).build();

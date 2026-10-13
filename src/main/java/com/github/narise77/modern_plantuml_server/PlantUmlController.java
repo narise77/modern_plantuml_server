@@ -39,7 +39,6 @@ import net.sourceforge.plantuml.api.PlantumlUtils;
 import net.sourceforge.plantuml.code.NoPlantumlCompressionException;
 import net.sourceforge.plantuml.code.TranscoderUtil;
 import net.sourceforge.plantuml.png.MetadataTag;
-import com.github.narise77.modern_plantuml_server.utility.Configuration;
 import com.github.narise77.modern_plantuml_server.utility.FontRegistrar;
 import com.github.narise77.modern_plantuml_server.utility.SampleLoader;
 import com.github.narise77.modern_plantuml_server.utility.UmlExtractor;
@@ -172,11 +171,22 @@ public class PlantUmlController {
         // 2. metadata
         String metadata = request.getParameter("metadata");
         if (metadata != null) {
-            try (InputStream img = getImage(new URL(metadata))) {
-                MetadataTag metadataTag = new MetadataTag(img, "plantuml");
-                String data = metadataTag.getData();
-                if (data != null) {
-                    return data;
+            HttpURLConnection con = null;
+            try {
+                con = (HttpURLConnection) new URL(metadata).openConnection();
+                con.setRequestMethod("GET");
+                con.setReadTimeout(10000);
+                con.connect();
+                try (InputStream img = con.getInputStream()) {
+                    MetadataTag metadataTag = new MetadataTag(img, "plantuml");
+                    String data = metadataTag.getData();
+                    if (data != null) {
+                        return data;
+                    }
+                }
+            } finally {
+                if (con != null) {
+                    con.disconnect();
                 }
             }
         }
@@ -214,8 +224,6 @@ public class PlantUmlController {
         model.addAttribute("diagramUrl", (index.isEmpty() ? "" : index + "/") + encoded);
         model.addAttribute("contextPath", request.getContextPath());
         // properties
-        model.addAttribute("showSocialButtons", Configuration.get("SHOW_SOCIAL_BUTTONS"));
-        model.addAttribute("showGithubRibbon", Configuration.get("SHOW_GITHUB_RIBBON"));
         model.addAttribute("fontFamilies", fontRegistrar.getFontFamilies());
         model.addAttribute("samples", sampleLoader.getSamples());
         model.addAttribute("plantumlVersion", Version.fullDescription());
@@ -246,22 +254,4 @@ public class PlantUmlController {
         }
         return "redirect:/uml/" + index + "/" + encoded;
     }
-
-    /**
-     * Get image input stream from URL.
-     *
-     * @param url URL to open connection
-     *
-     * @return response input stream from URL
-     *
-     * @throws IOException if an input or output exception occurred
-     */
-    private static InputStream getImage(URL url) throws IOException {
-        final HttpURLConnection con = (HttpURLConnection) url.openConnection();
-        con.setRequestMethod("GET");
-        con.setReadTimeout(10000); // 10 seconds
-        con.connect();
-        return con.getInputStream();
-    }
-
 }

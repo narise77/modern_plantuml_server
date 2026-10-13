@@ -43,6 +43,7 @@ import net.sourceforge.plantuml.ErrorUml;
 import net.sourceforge.plantuml.FileFormat;
 import net.sourceforge.plantuml.FileFormatOption;
 import net.sourceforge.plantuml.NullOutputStream;
+import com.github.narise77.modern_plantuml_server.utility.DiagramCache;
 import net.sourceforge.plantuml.SourceStringReader;
 import net.sourceforge.plantuml.StringUtils;
 import net.sourceforge.plantuml.utils.Base64Coder;
@@ -204,11 +205,19 @@ public class DiagramResponse {
         if (diagram instanceof PSystemError) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         }
-        // render into a buffer first so that the file size is known before the headers are committed
-        final byte[] imageBytes;
-        try (ByteArrayOutputStream outstream = new ByteArrayOutputStream()) {
-            diagram.exportDiagram(outstream, blockSelection.systemIdx, new FileFormatOption(format));
-            imageBytes = outstream.toByteArray();
+        final String dpi = request != null ? request.getParameter("dpi") : null;
+        final String cacheKey = DiagramCache.computeKey(uml, format.name(), idx, dpi);
+        byte[] imageBytes = DiagramCache.INSTANCE.get(cacheKey);
+
+        if (imageBytes == null) {
+            // render into a buffer first so that the file size is known before the headers are committed
+            try (ByteArrayOutputStream outstream = new ByteArrayOutputStream()) {
+                diagram.exportDiagram(outstream, blockSelection.systemIdx, new FileFormatOption(format));
+                imageBytes = outstream.toByteArray();
+            }
+            if (!(diagram instanceof PSystemError)) {
+                DiagramCache.INSTANCE.put(cacheKey, imageBytes);
+            }
         }
         writeBody(request, response, imageBytes);
     }
@@ -254,17 +263,26 @@ public class DiagramResponse {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         }
 
-        final byte[] svgBytes;
-        try (ByteArrayOutputStream outstream = new ByteArrayOutputStream()) {
-            diagram.exportDiagram(outstream, blockSelection.systemIdx, new FileFormatOption(FileFormat.SVG));
-            svgBytes = outstream.toByteArray();
+        final String cacheKey = DiagramCache.computeKey(uml, "DRAWIO", idx, null);
+        byte[] drawioBytes = DiagramCache.INSTANCE.get(cacheKey);
+
+        if (drawioBytes == null) {
+            final byte[] svgBytes;
+            try (ByteArrayOutputStream outstream = new ByteArrayOutputStream()) {
+                diagram.exportDiagram(outstream, blockSelection.systemIdx, new FileFormatOption(FileFormat.SVG));
+                svgBytes = outstream.toByteArray();
+            }
+
+            final String svgString = new String(svgBytes, java.nio.charset.StandardCharsets.UTF_8);
+            final String drawioXml = com.github.narise77.modern_plantuml_server.utility.DrawioConverter.convert(svgString);
+            drawioBytes = drawioXml.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            if (!(diagram instanceof PSystemError)) {
+                DiagramCache.INSTANCE.put(cacheKey, drawioBytes);
+            }
         }
 
-        final String svgString = new String(svgBytes, java.nio.charset.StandardCharsets.UTF_8);
-        final String drawioXml = com.github.narise77.modern_plantuml_server.utility.DrawioConverter.convert(svgString);
-
         response.setHeader("Content-Disposition", "inline; filename=\"diagram.drawio\"");
-        writeBody(request, response, drawioXml.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        writeBody(request, response, drawioBytes);
     }
 
     /**

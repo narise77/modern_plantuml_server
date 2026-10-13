@@ -135,6 +135,8 @@ public class ProxyController {
         final HttpURLConnection conn = getConnection(srcUrl);
         try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
             uml = br.lines().collect(Collectors.joining("\n"));
+        } finally {
+            conn.disconnect();
         }
 
         // generate the response
@@ -176,8 +178,14 @@ public class ProxyController {
         }
 
         final String source;
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(new URL(sourceURL).openStream()))) {
+        final URL url = new URL(sourceURL);
+        final java.net.URLConnection urlConn = url.openConnection();
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(urlConn.getInputStream()))) {
             source = br.lines().collect(Collectors.joining("\n")).trim();
+        } finally {
+            if (urlConn instanceof HttpURLConnection) {
+                ((HttpURLConnection) urlConn).disconnect();
+            }
         }
         final SourceStringReader reader = new SourceStringReader(source);
         final int n = num == null ? 0 : Integer.parseInt(num);

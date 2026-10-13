@@ -98,27 +98,56 @@ public class McpService {
             result.put("data", text);
             result.put("isBinary", false);
         } else if ("drawio".equals(fmt)) {
-            reader.outputImage(out, new FileFormatOption(FileFormat.SVG, false));
-            final String svg = out.toString(StandardCharsets.UTF_8);
-            final String drawioXml = com.github.narise77.modern_plantuml_server.utility.DrawioConverter.convert(svg);
+            final String cacheKey = com.github.narise77.modern_plantuml_server.utility.DiagramCache.computeKey(code, "mcp_drawio", 0, null);
+            final byte[] cachedXmlBytes = com.github.narise77.modern_plantuml_server.utility.DiagramCache.INSTANCE.get(cacheKey);
+            final String drawioXml;
+            final String svg;
+            if (cachedXmlBytes != null) {
+                drawioXml = new String(cachedXmlBytes, StandardCharsets.UTF_8);
+                svg = null;
+            } else {
+                reader.outputImage(out, new FileFormatOption(FileFormat.SVG, false));
+                svg = out.toString(StandardCharsets.UTF_8);
+                drawioXml = com.github.narise77.modern_plantuml_server.utility.DrawioConverter.convert(svg);
+                com.github.narise77.modern_plantuml_server.utility.DiagramCache.INSTANCE.put(cacheKey, drawioXml.getBytes(StandardCharsets.UTF_8));
+            }
+
             result.put("format", "drawio");
             result.put("mimeType", "application/vnd.jgraph.mxfile");
             result.put("data", drawioXml);
             result.put("isBinary", false);
 
-            // Also generate PNG preview image so MCP clients can display an image preview alongside Draw.io XML
+            // Fast preview PNG generation directly from SVG via JSVG rasterizer (avoids re-rendering entire diagram layout)
             try {
-                final ByteArrayOutputStream pngOut = new ByteArrayOutputStream();
-                reader.outputImage(pngOut, new FileFormatOption(FileFormat.PNG, false));
-                final String base64Png = Base64.getEncoder().encodeToString(pngOut.toByteArray());
+                final String pngCacheKey = com.github.narise77.modern_plantuml_server.utility.DiagramCache.computeKey(code, "mcp_drawio_preview", 0, null);
+                byte[] pngBytes = com.github.narise77.modern_plantuml_server.utility.DiagramCache.INSTANCE.get(pngCacheKey);
+                if (pngBytes == null) {
+                    if (svg != null) {
+                        pngBytes = com.github.narise77.modern_plantuml_server.utility.SvgRasterizer.renderToPng(svg);
+                    } else {
+                        final ByteArrayOutputStream pngOut = new ByteArrayOutputStream();
+                        reader.outputImage(pngOut, new FileFormatOption(FileFormat.PNG, false));
+                        pngBytes = pngOut.toByteArray();
+                    }
+                    com.github.narise77.modern_plantuml_server.utility.DiagramCache.INSTANCE.put(pngCacheKey, pngBytes);
+                }
+                final String base64Png = Base64.getEncoder().encodeToString(pngBytes);
                 result.put("imageData", base64Png);
                 result.put("imageMimeType", "image/png");
             } catch (Exception ignored) {
             }
         } else {
             // Default: SVG
-            reader.outputImage(out, new FileFormatOption(FileFormat.SVG, false));
-            final String svg = out.toString(StandardCharsets.UTF_8);
+            final String cacheKey = com.github.narise77.modern_plantuml_server.utility.DiagramCache.computeKey(code, "mcp_svg", 0, null);
+            byte[] svgBytes = com.github.narise77.modern_plantuml_server.utility.DiagramCache.INSTANCE.get(cacheKey);
+            final String svg;
+            if (svgBytes != null) {
+                svg = new String(svgBytes, StandardCharsets.UTF_8);
+            } else {
+                reader.outputImage(out, new FileFormatOption(FileFormat.SVG, false));
+                svg = out.toString(StandardCharsets.UTF_8);
+                com.github.narise77.modern_plantuml_server.utility.DiagramCache.INSTANCE.put(cacheKey, svg.getBytes(StandardCharsets.UTF_8));
+            }
             result.put("format", "svg");
             result.put("mimeType", "image/svg+xml");
             result.put("data", svg);
